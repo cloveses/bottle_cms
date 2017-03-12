@@ -68,10 +68,10 @@ def get_sub_lvls(lid):
         return res if res else []
     v = ses.query(Level).filter_by(id=lid).first()
     if v:
-        lvls = ses.query(Level).filter(Level.r>=v.r).order_by(Level.r)
+        lvls = ses.query(Level).filter(Level.r>v.r).order_by(Level.r)
         sub_lvls = []
         for sub_lvl in lvls:
-            if sub_lvl.c >= v.c:
+            if sub_lvl.c > v.c:
                 sub_lvls.append(sub_lvl)
             else:
                 break
