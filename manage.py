@@ -36,12 +36,12 @@ def ckupload():
     rootpath = './uploads'
     if not os.path.exists(rootpath):
         os.makedirs(rootpath)
-    if os.path.exists('/'.join((rootpath,fname+fext))):
+    while os.path.exists('/'.join((rootpath,fname+fext))):
         fname += 'c'
     callback = request.GET.getunicode('CKEditorFuncNum')
     upload.save('/'.join((rootpath,fname+fext)))
     restr = "<script type=\"text/javascript\">"
-    restr += "window.parent.CKEDITOR.tools.callFunction("+ callback + ",'" +"img/"+ fname + fext + "','')"
+    restr += "window.parent.CKEDITOR.tools.callFunction("+ callback + ",'" +"/img/"+ fname + fext + "','')"
     restr += "</script>"
     return restr
 
@@ -60,7 +60,7 @@ def index():
         name = request.get_cookie('name',secret=secret)
         id = request.get_cookie('id',secret=secret)
         user_type = request.get_cookie('user_type',secret=secret)
-        print('.....',name,id,user_type)
+        # print('.....',name,id,user_type)
         return template('tpls/index.tpl',
             name=name,
             id=id,
@@ -237,11 +237,12 @@ def ctxmgr(lid='',page=0):
         bread_nav_dec = []
         if power:
             for p in power:
-                powers.append(level.get_sub_lvls(str(p.id)))
+                powers.append(level.get_sub_lvls(p.id))
         if powers and lid:
+            lid = int(lid)
             bread_nav = level.get_bread_nav(lid)
             ids = set().union(*powers)
-            ids = {str(i.id) for i in ids}
+            ids = {i.id for i in ids}
             for bn in bread_nav:
                 if bn[0] in ids:
                     bread_nav_dec.append(bn)
@@ -251,6 +252,7 @@ def ctxmgr(lid='',page=0):
             name=name,
             id=uid,
             lid=lid,
+            lname=level.get_lvl_name(lid) if lid else '',
             user_type=user_type,
             power=power,
             bread_nav=bread_nav_dec,
@@ -261,7 +263,7 @@ def ctxmgr(lid='',page=0):
         if action == "add":
             add_ctx()
         elif action == "release":
-            print('.........',action)
+            # print('.........',action)
             release()
 
 def add_ctx():
@@ -334,12 +336,13 @@ def mindex(plid=''):
     info = response.set_cookie('info','',secret=secret)
     response.set_cookie('info','',secret=secret)
     navs = level.get_next_lvls(plid)
+    navs = navs if navs else [level.get_lvl(plid)]
     newslist = [(nav,news.get_lvl_news(str(nav.id))) 
                 for nav in navs]
     if request.method == 'GET':
         name = request.get_cookie('name',secret=secret)
         id = request.get_cookie('id',secret=secret)
-        print(name,'......',id)
+        # print(name,'......',id)
         return template('tpls/mindex.tpl',
             name=name,
             id=id,
@@ -364,7 +367,8 @@ def mindex(plid=''):
                     id=str(u.id),
                     info=info,
                     navs=navs,
-                    newslist=newslist
+                    newslist=newslist,
+                    plid=plid
                     )
             else:
                 response.set_cookie('info',
@@ -379,8 +383,9 @@ def mindex(plid=''):
 @route('/news/<nid>/<plid>')
 def detail(nid,plid=''):
     navs = level.get_next_lvls(plid)
+    navs = navs if navs else [level.get_lvl(plid)]
     anews = news.get_anews(nid)
-    print('........',anews)
+    # print('........',anews)
     name = request.get_cookie('name',secret=secret)
     id = request.get_cookie('id',secret=secret)
     return template('tpls/detail.tpl',
@@ -460,3 +465,4 @@ if __name__ == '__main__':
     if ADD_AMDIN:
         aduser.add_admin_user(**DEFAULT_ADMIN)
     run(port=9099,debug=True,reloader=True)
+    # run(server='waitress',port=9099,debug=True,reloader=True)

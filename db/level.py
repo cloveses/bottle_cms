@@ -136,6 +136,8 @@ def get_next_lvls(parent_lid):
         plvl = ses.query(Level).filter_by(id=parent_lid).first()
         if plvl:
             sub_lvls = get_sub_lvls(parent_lid)
+            for l in sub_lvls:
+                print(l.id,l.name,l.r,l.c)
             if sub_lvls:
                 r = [v for v in sub_lvls if v.c -1 == plvl.c]
                 return r if r else []
@@ -152,3 +154,6 @@ def get_lvl_name(lid):
     lvl = ses.query(Level).filter_by(id=lid).first()
     if lvl:
         return lvl.name
+
+def get_lvl(lid):
+    return ses.query(Level).filter_by(id=lid).first()
